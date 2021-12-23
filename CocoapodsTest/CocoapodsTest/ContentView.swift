@@ -5,6 +5,7 @@
 //  Created by 이태현 on 2021/12/21.
 //
 import SwiftUI
+import Combine//비동기 처리 위한 Combine 프레임워크
 
 //MARK: MODEL
 struct Course: Hashable, Codable {
