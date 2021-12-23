@@ -17,28 +17,38 @@ struct Course: Hashable, Codable {
 //MARK: VIEWMODEL
 class ViewModel: ObservableObject {
     @Published var courses: [Course] = []
+    var cancellables = Set<AnyCancellable>()
+    
+    var urlString = "https://raw.githubusercontent.com/ZeroFriends/GoStopCalculator/develop/app/src/main/assets/rule.json"
+    
+    init() {
+        fetch()
+    }
     
     func fetch() {
-        guard let url = URL(string: "https://raw.githubusercontent.com/ZeroFriends/GoStopCalculator/develop/app/src/main/assets/rule.json") else {
+        guard let url = URL(string: urlString) else {
             return
         }
-        let task = URLSession.shared.dataTask(with: url) {
-            [weak self] data, _, error in
-            guard let data = data, error == nil else {
-                return
+        
+        URLSession.shared.dataTaskPublisher(for: url)
+            .subscribe(on: DispatchQueue.global(qos: .background))
+            .receive(on: DispatchQueue.main)
+            .tryMap { data, response -> Data in
+                guard let response = response as? HTTPURLResponse,
+                      response.statusCode >= 200 && response.statusCode < 300 else {
+                          throw URLError(.badServerResponse)
+                      }
+                return data
             }
-            
-            do {
-                let courses = try JSONDecoder().decode([Course].self, from: data)
-                DispatchQueue.main.async {
-                    self?.courses = courses
-                }
-            } catch {
-                print(error)
+            .decode(type: [Course].self, decoder: JSONDecoder())
+            .sink { completion in
+                print("Completion: \(completion)")
+            } receiveValue: { [weak self] receivedValue in
+                self?.courses = receivedValue
             }
-        }
-        task.resume()
+            .store(in: &cancellables)
     }
+    
 }
 
 //MARK: VIEW
@@ -59,9 +69,6 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("조건")
-            .onAppear {
-                viewModel.fetch()
-            }
         }
     }
 }
