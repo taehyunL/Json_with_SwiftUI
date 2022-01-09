@@ -32,7 +32,6 @@ class ViewModel: ObservableObject {
         
         URLSession.shared.dataTaskPublisher(for: url)
             .subscribe(on: DispatchQueue.global(qos: .background))
-            .receive(on: DispatchQueue.main)
             .tryMap { data, response -> Data in
                 guard let response = response as? HTTPURLResponse,
                       response.statusCode >= 200 && response.statusCode < 300 else {
@@ -41,6 +40,7 @@ class ViewModel: ObservableObject {
                 return data
             }
             .decode(type: [Course].self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
             .sink { completion in
                 print("Completion: \(completion)")
             } receiveValue: { [weak self] receivedValue in
