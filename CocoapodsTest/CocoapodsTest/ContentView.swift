@@ -9,7 +9,7 @@ import Combine//비동기 처리 위한 Combine 프레임워크
 
 //MARK: MODEL
 struct Course: Hashable, Codable {
-    let title: String
+    let name: String
     let isEssential: Bool
     let script: String
 }
@@ -61,7 +61,7 @@ struct ContentView: View {
                 ForEach(viewModel.courses, id: \.self) { course in
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(course.title)
+                            Text(course.name)
                             Text(String(course.isEssential))
                             Text(course.script)
                         }
