@@ -22,7 +22,15 @@ class ViewModel: ObservableObject {
     var urlString = "https://raw.githubusercontent.com/ZeroFriends/GoStopCalculator/develop/app/src/main/assets/rule.json"
     
     init() {
+        add()
+    }
+    
+    func add() {
         fetch()
+    }
+    
+    func getCourseList() -> [Course] {
+        return courses
     }
     
     func fetch() {
@@ -58,7 +66,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                ForEach(viewModel.courses, id: \.self) { course in
+                ForEach(viewModel.getCourseList(), id: \.self) { course in
                     HStack {
                         VStack(alignment: .leading) {
                             Text(course.name)
